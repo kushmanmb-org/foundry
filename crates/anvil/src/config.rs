@@ -206,7 +206,8 @@ pub struct NodeConfig {
     pub networks: NetworkConfigs,
     /// Do not print log messages.
     pub silent: bool,
-    /// The path where states are cached.
+    /// The path where persisted states are cached (used with `max_persisted_states`).
+    /// This does not affect the fork RPC cache location.
     pub cache_path: Option<PathBuf>,
 }
 
@@ -675,6 +676,15 @@ impl NodeConfig {
         self
     }
 
+    /// Sets max number of transactions in a block
+    #[must_use]
+    pub fn with_max_transactions(mut self, max_transactions: Option<usize>) -> Self {
+        if let Some(max_transactions) = max_transactions {
+            self.max_transactions = max_transactions;
+        }
+        self
+    }
+
     /// Sets the base fee
     #[must_use]
     pub fn with_base_fee(mut self, base_fee: Option<u64>) -> Self {
@@ -825,10 +835,18 @@ impl NodeConfig {
     /// Disables storage caching
     #[must_use]
     pub fn no_storage_caching(self) -> Self {
-        self.with_storage_caching(true)
+        self.with_no_storage_caching(true)
+    }
+
+    /// Sets whether to disable storage caching
+    #[must_use]
+    pub fn with_no_storage_caching(mut self, no_storage_caching: bool) -> Self {
+        self.no_storage_caching = no_storage_caching;
+        self
     }
 
     #[must_use]
+    #[deprecated(note = "Use `with_no_storage_caching` instead")]
     pub fn with_storage_caching(mut self, storage_caching: bool) -> Self {
         self.no_storage_caching = storage_caching;
         self
